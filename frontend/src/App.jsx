@@ -8,8 +8,8 @@ const api = (path, opts = {}) =>
     ...opts,
   }).then(r => r.json());
 
-
 export default function App() {
+  const [mode, setMode] = useState("login"); // "login" or "register"
   const [logged, setLogged] = useState(false)
   const [balance, setBalance] = useState(null)
   const [tx, setTx] = useState([])
@@ -28,6 +28,21 @@ export default function App() {
     else setError(res?.error || "Login failed")
   }
 
+  const handleRegister = async (e) => {
+    e.preventDefault()
+    setLoading(true); setError("")
+    const username = e.target.username.value
+    const password = e.target.password.value
+    const res = await api('/register', { method: 'POST', body: JSON.stringify({ username, password }) })
+    setLoading(false)
+    if (res?.message) {
+      alert(res.message)
+      setMode("login") // switch to login after successful registration
+    } else {
+      setError(res?.error || "Registration failed")
+    }
+  }
+
   useEffect(() => {
     if (!logged) return
     (async () => {
@@ -43,14 +58,28 @@ export default function App() {
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', padding: 24, maxWidth: 900, margin: '0 auto' }}>
       <h1>Secure Banking Dashboard</h1>
+
       {!logged && (
-        <form onSubmit={handleLogin} style={{ display: 'grid', gap: 8, maxWidth: 320 }}>
-          <input name="username" placeholder="username" defaultValue="demo@bank.com" />
-          <input name="password" placeholder="password" type="password" defaultValue="demo123" />
-          <button disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
-          {error && <div style={{ color: 'crimson' }}>{error}</div>}
-          <small>Hint: demo@bank.com / demo123</small>
-        </form>
+        <div style={{ maxWidth: 320 }}>
+          {mode === "login" ? (
+            <form onSubmit={handleLogin} style={{ display: 'grid', gap: 8 }}>
+              <input name="username" placeholder="username" defaultValue="demo@bank.com" />
+              <input name="password" placeholder="password" type="password" defaultValue="demo123" />
+              <button disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
+              {error && <div style={{ color: 'crimson' }}>{error}</div>}
+              <button type="button" onClick={() => { setMode("register"); setError(""); }}>Register</button>
+              <small>Hint: demo@bank.com / demo123</small>
+            </form>
+          ) : (
+            <form onSubmit={handleRegister} style={{ display: 'grid', gap: 8 }}>
+              <input name="username" placeholder="username" />
+              <input name="password" type="password" placeholder="password" />
+              <button type="submit" disabled={loading}>{loading ? 'Registering...' : 'Register'}</button>
+              {error && <div style={{ color: 'crimson' }}>{error}</div>}
+              <button type="button" onClick={() => { setMode("login"); setError(""); }}>Back to Login</button>
+            </form>
+          )}
+        </div>
       )}
 
       {logged && (
@@ -102,3 +131,4 @@ export default function App() {
     </div>
   )
 }
+
