@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react'
 
-const api = (path, opts={}) => fetch(`/api${path}`, { 
-  headers: { 'Content-Type': 'application/json' }, 
-  ...opts 
-}).then(r => r.json())
+const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
+
+const api = (path, opts = {}) =>
+  fetch(`${API_BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  }).then(r => r.json());
+
 
 export default function App() {
   const [logged, setLogged] = useState(false)
